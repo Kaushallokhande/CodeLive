@@ -101,8 +101,6 @@ const MeetingPage = () => {
         setLoadingJoin(false);
         return;
       }
-      console.log("Joining meeting with ID:", meetingId, "and password:", password);
-
       const response = await api.post(
         "/rooms/join",
         { roomId: meetingId, password },

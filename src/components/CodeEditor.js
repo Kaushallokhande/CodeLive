@@ -26,9 +26,6 @@ const CodeEditor = () => {
   const monacoInstance = useMonaco();
 
   useEffect(() => {
-    console.log("Meeting ID from location state:", meetingId);
-    console.log(password);
-    
     if (location.state?.meetingId) setMeetingId(location.state.meetingId);
     if (location.state?.password) setPassword(location.state.password);
   }, [location.state, setMeetingId, setPassword]);
@@ -120,7 +117,14 @@ const CodeEditor = () => {
             emitCodeChange(value || "");
           }}
           onMount={handleEditorDidMount}
-          options={{ automaticLayout: true }}
+          options={{
+            automaticLayout: true,
+            scrollbar: {
+              vertical: "hidden",
+              horizontal: "hidden",
+            },
+            overviewRulerLanes: 0,
+          }}
         />
       </Box>
       <style>
