@@ -6,6 +6,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+  const [loggedIn, setLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
@@ -15,30 +16,42 @@ export const AuthProvider = ({ children }) => {
     setUserId(id);
     setUsername(name);
   };
-  
-  useEffect(() => {
-    if (userId && username) {
-      console.log("Login successful:", userId, username);
-    }
-  }, [userId, username]);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoggedIn(false);
+      setLoading(false);
+      return;
+    }
+  
+    const decodedToken = JSON.parse(atob(token.split(".")[1]));
+    const { id, username } = decodedToken;
+  
+    const checkUserExists = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const response = await api.get("/auth/");
-          updateUser(response.data.id, response.data.username);
+        const response = await api.get(`/auth/check-user/${id}`);
+        if (!response.data.exists) {
+          setLoggedIn(false);
+          localStorage.removeItem("token");
+        } else {
+          setUserId(id);
+          setUsername(username);
+          navigate("/meet");
+          setLoggedIn(true);
         }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
+      } catch (error) {
+        console.error("Error checking user:", error);
+        setLoggedIn(false);
+        localStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
     };
-    fetchUser();
+  
+    checkUserExists();
   }, []);
-
+  
   const signup = async (username, email, password) => {
     try {
       setLoading(true);
@@ -46,7 +59,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post("/auth/signup", { username, email, password });
       localStorage.setItem("token", response.data.token);
       updateUser(response.data.id, response.data.username);
-      navigate("/login");
+      navigate("/meet");
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed.");
     } finally {
@@ -62,7 +75,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", response.data.token);
       updateUser(response.data.id, response.data.username);
       navigate("/meet");
-      
     } catch (err) {
       setError(err.response?.data?.message || "Login failed.");
     } finally {
@@ -78,7 +90,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userId, username, updateUser, signup, login, logout, loading, error }}>
+    <AuthContext.Provider value={{ userId, username, signup, login, logout, loading, error, loggedIn, setLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

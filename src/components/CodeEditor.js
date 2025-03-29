@@ -1,14 +1,14 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import { Box } from "@mui/material";
-import Editor, { useMonaco } from "@monaco-editor/react";
-import Navbar from "./Navbar";
 import { useMeetContext } from "../context/MeetContext";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useLocation } from "react-router-dom";
 import { socket } from "../socket";
 import { debounce } from "lodash";
-import * as monaco from "monaco-editor";
+import Editor, { useMonaco } from "@monaco-editor/react";
+import Navbar from "./Navbar";
+import axios from "axios";
 
 const COLORS = ["#FF5733", "#33FF57", "#3357FF", "#F033FF", "#FFDD33"];
 
@@ -17,7 +17,7 @@ const CodeEditor = () => {
   const { userId, username } = useContext(AuthContext);
   const location = useLocation();
   const { meetingId, password } = location.state || {};
-  
+
   const [editorInstance, setEditorInstance] = useState(null);
   const cursorsRef = useRef({});
   const decorationsRef = useRef([]);
@@ -26,9 +26,22 @@ const CodeEditor = () => {
   const monacoInstance = useMonaco();
 
   useEffect(() => {
-    if (meetingId) setMeetingId(meetingId);
-    if (password) setPassword(password);
-  }, [meetingId, password, setMeetingId, setPassword]);
+    console.log("Meeting ID from location state:", meetingId);
+    console.log(password);
+    
+    if (location.state?.meetingId) setMeetingId(location.state.meetingId);
+    if (location.state?.password) setPassword(location.state.password);
+  }, [location.state, setMeetingId, setPassword]);
+
+
+  useEffect(() => {
+    if (meetingId) {
+      axios
+        .get(`https://codelive-backend.onrender.com/api/rooms/${meetingId}`)
+        .then((res) => setCode(res.data.code || ""))
+        .catch((err) => console.error("Failed to fetch code:", err));
+    }
+  }, [meetingId, setCode]);
 
   useEffect(() => {
     if (meetingId && userId) {
@@ -57,7 +70,7 @@ const CodeEditor = () => {
     }
 
     return () => {
-      socket.emit("leave-room");
+      socket.emit("leave-room", { roomId: meetingId, userId });
       socket.off("code-update");
       socket.off("cursor-move");
     };
@@ -83,7 +96,7 @@ const CodeEditor = () => {
     if (!editorInstance || !monacoInstance) return;
 
     const newDecorations = Object.entries(cursorsRef.current).map(([id, { position, name }]) => ({
-      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+      range: new monacoInstance.Range(position.lineNumber, position.column, position.lineNumber, position.column),
       options: {
         className: "custom-cursor",
         inlineClassName: `cursor-${id}`,
@@ -97,17 +110,19 @@ const CodeEditor = () => {
   return (
     <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <Editor
-        defaultLanguage={selectedLanguage}
-        theme={darkMode ? "vs-dark" : "vs-light"}
-        value={code}
-        onChange={(value) => {
-          setCode(value || "");
-          emitCodeChange(value || "");
-        }}
-        onMount={handleEditorDidMount}
-        options={{ automaticLayout: true }}
-      />
+      <Box sx={{ flexGrow: 1, p: 1 }}>
+        <Editor
+          defaultLanguage={selectedLanguage}
+          theme={darkMode ? "vs-dark" : "vs-light"}
+          value={code}
+          onChange={(value) => {
+            setCode(value || "");
+            emitCodeChange(value || "");
+          }}
+          onMount={handleEditorDidMount}
+          options={{ automaticLayout: true }}
+        />
+      </Box>
       <style>
         {Object.entries(cursorColors)
           .map(([id, color]) => `

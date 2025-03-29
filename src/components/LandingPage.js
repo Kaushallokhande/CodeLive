@@ -3,23 +3,27 @@ import { Button, Typography, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import NavbarHome from "./NavbarHome";
+import { useMeetContext } from "../context/MeetContext";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { darkMode } = useMeetContext();
+
   return (
-    <Box>
-      <NavbarHome />
+    <Box sx={{ m: 0, p: 0 }}>
+      <NavbarHome darkMode={darkMode} />
       <Box
         sx={{
           minHeight: "100vh",
-          bgcolor: "white",
-          color: "black",
+          bgcolor: darkMode ? "#121212" : "white",
+          color: darkMode ? "white" : "black",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
           px: 2,
+          transition: "background-color 0.3s ease, color 0.3s ease",
         }}
       >
         <Typography variant="h4" fontWeight="bold">
@@ -33,7 +37,7 @@ const LandingPage = () => {
           <Button
             variant="contained"
             sx={{
-              bgcolor: "black",
+              bgcolor: darkMode ? "#444" : "black",
               color: "white",
               px: 3,
               py: 1,
@@ -47,7 +51,6 @@ const LandingPage = () => {
         </motion.div>
       </Box>
     </Box>
-
   );
 };
 

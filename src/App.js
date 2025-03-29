@@ -1,64 +1,79 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext, use } from "react";
 import { Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
+import { useMeetContext } from "./context/MeetContext";
+import { AuthContext } from "./context/AuthContext";
+import { socket } from "./socket";
 import LandingPage from "./components/LandingPage";
 import LoginForm from "./components/LoginForm";
 import SignupForm from "./components/SignupForm";
 import MeetingPage from "./components/MeetingPage";
 import CodeEditor from "./components/CodeEditor";
 import ProtectedRoute from "./components/ProtectedRoute";
+import api from "./utils/api";
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return Boolean(localStorage.getItem("token"));
-  });
+  const { darkMode } = useMeetContext();
 
+  useEffect(() => {
+    document.body.style.backgroundColor = darkMode ? "#121212" : "white";
+  }, [darkMode]);
+  
   const JoinRoomRedirect = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-
+    const { userId, loading } = useContext(AuthContext);
+    const { setSuccess, setError, setLoadingJoin, setMeetingId, setPassword } = useMeetContext();
+  
     useEffect(() => {
-      const joinRoom = async () => {
-        const meetId = searchParams.get("meetId");
-        const password = searchParams.get("password");
-
-        if (!meetId || !password) {
-          navigate("/"); // Redirect to home if params are missing
-          return;
-        }
-
+      if (loading || !userId) return;
+  
+      const handleJoinMeeting = async () => {
         try {
+          setLoadingJoin(true);
+          setError(null);
+  
           const token = localStorage.getItem("token");
-          const response = await axios.get(
-            `https://codelive-backend.onrender.com/api/rooms/joinroom?meetId=${meetId}&password=${password}`,
+          const meetId = searchParams.get("meetId");
+          const pass = searchParams.get("password");
+
+          const response = await api.post(
+            "/rooms/join",
+            { roomId: meetId, password: pass },
             { headers: { Authorization: `Bearer ${token}` } }
           );
-
-          console.log(response.data);
-
-          if (response.status === 200) {
-            navigate("/code"); // Redirect to Code Editor with meetId
-          }
-        } catch (error) {
-          console.error("Failed to join room:", error.response?.data || error.message);
-          navigate("/"); // Redirect if joining fails
+          setSuccess("Joined meeting successfully!");
+  
+          if (!socket.connected) socket.connect();
+          
+          setMeetingId(meetId);
+          setPassword(pass);
+          socket.emit("join-room", { roomId: meetId, userId, username: response.data.username });
+          socket.emit("user-joined", { id: userId, username:response.data.username });
+          navigate("/code", { state: { meetingId: meetId, password: pass } });
+          
+        } catch (err) {
+          setError(err.response?.data?.message || "Failed to join meeting");
+        } finally {
+          setLoadingJoin(false);
         }
       };
-
-      joinRoom();
-    }, [searchParams, navigate]);
-
+  
+      handleJoinMeeting();
+    }, [loading, userId]); 
+  
     return <p>Joining the meeting...</p>;
   };
+  
+  
 
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginForm setIsAuthenticated={setIsAuthenticated} />} />
-      <Route path="/signup" element={<SignupForm setIsAuthenticated={setIsAuthenticated} />} />
-      <Route path="/meet" element={<MeetingPage />} />
+      <Route path="/login" element={<LoginForm/>} />
+      <Route path="/signup" element={<SignupForm/>} />
       <Route path="/joinroom" element={<JoinRoomRedirect />} />
-      <Route path="/code" element={<ProtectedRoute element={<CodeEditor />} isAuthenticated={isAuthenticated} />} />
+      <Route path="/meet" element={<ProtectedRoute element={<MeetingPage />}/>}/>
+      <Route path="/code" element={<ProtectedRoute element={<CodeEditor />}/>} />
     </Routes>
   );
 };

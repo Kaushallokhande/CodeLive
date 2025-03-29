@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-import { AppBar, Toolbar, Typography, Button, IconButton, Box, Dialog, DialogTitle, DialogContent, TextField, Menu, MenuItem } from "@mui/material";
-import { DarkMode, LightMode, ContentCopy, Close, ArrowDropDown } from "@mui/icons-material";
+import { AppBar, Toolbar, Typography, Button, IconButton, Box, Menu, MenuItem, Dialog, DialogTitle, DialogContent, TextField } from "@mui/material";
+import { DarkMode, LightMode, ContentCopy, Close, ArrowDropDown, Menu as MenuIcon } from "@mui/icons-material";
 import { useMeetContext } from "../context/MeetContext";
 
 const languages = [
@@ -14,13 +14,14 @@ const Navbar = () => {
     toggleDarkMode,
     selectedLanguage,
     setSelectedLanguage,
-    file,
+    code,
     meetingId,
     password,
   } = useMeetContext();
 
   const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [langAnchor, setLangAnchor] = useState(null);
   const urlRef = useRef(null);
 
   const inviteURL = `http://localhost:3000/joinroom?meetId=${meetingId}&password=${password}`;
@@ -33,7 +34,7 @@ const Navbar = () => {
   };
 
   const handleDownload = () => {
-    const blob = new Blob([file], { type: "text/plain" });
+    const blob = new Blob([code], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `code.${selectedLanguage}`;
@@ -44,26 +45,31 @@ const Navbar = () => {
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
-    setAnchorEl(null);
+    setLangAnchor(null);
   };
 
   return (
     <>
-      <AppBar position="static" sx={{ bgcolor: darkMode ? "black" : "white", color: darkMode ? "white" : "black" }}>
+      <AppBar
+        position="sticky"
+        sx={{
+          bgcolor: darkMode ? "black" : "white",
+          color: darkMode ? "white" : "black",
+          boxShadow: "none",
+          borderBottom: "1px solid",
+          borderColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        }}
+      >
+
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="h6" fontWeight="bold">CodeLive</Typography>
-          <Box>
-            <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }}>Save</Button>
-
+          <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={handleDownload}>Download</Button>
-
             <Button onClick={() => setOpen(true)} sx={{ color: darkMode ? "white" : "black", textTransform: "none" }}>Invite</Button>
-
-            <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={(e) => setAnchorEl(e.currentTarget)} endIcon={<ArrowDropDown />}>
+            <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={(e) => setLangAnchor(e.currentTarget)} endIcon={<ArrowDropDown />}>
               {selectedLanguage ? selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1).toLowerCase() : "Java"}
             </Button>
-
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+            <Menu anchorEl={langAnchor} open={Boolean(langAnchor)} onClose={() => setLangAnchor(null)}>
               {languages.map((lang) => (
                 <MenuItem key={lang} onClick={() => handleLanguageChange(lang)}>{lang.toUpperCase()}</MenuItem>
               ))}
@@ -71,6 +77,16 @@ const Navbar = () => {
             <IconButton onClick={toggleDarkMode} sx={{ color: darkMode ? "white" : "black" }}>
               {darkMode ? <LightMode /> : <DarkMode />}
             </IconButton>
+          </Box>
+          <Box sx={{ display: { xs: "flex", md: "none" } }}>
+            <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} sx={{ color: darkMode ? "white" : "black" }}>
+              <MenuIcon />
+            </IconButton>
+            <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
+              <MenuItem onClick={handleDownload}>Download</MenuItem>
+              <MenuItem onClick={() => setOpen(true)}>Invite</MenuItem>
+              <MenuItem onClick={toggleDarkMode}>{darkMode ? "Light Mode" : "Dark Mode"}</MenuItem>
+            </Menu>
           </Box>
         </Toolbar>
       </AppBar>

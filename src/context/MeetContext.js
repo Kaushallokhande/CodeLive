@@ -1,9 +1,7 @@
 import React, { createContext, useState, useContext } from "react";
 
-// Create a context
 const MeetContext = createContext();
 
-// Create a provider component
 export const MeetProvider = ({ children }) => {
   const [meetingId, setMeetingId] = useState("");
   const [password, setPassword] = useState("");
@@ -16,13 +14,10 @@ export const MeetProvider = ({ children }) => {
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [loadingJoin, setLoadingJoin] = useState(false);
 
-  // Add missing states
   const [darkMode, setDarkMode] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
   const [code, setCode] = useState("// Start coding here...");
-  const [file, setFile] = useState("");
 
-  // Function to toggle dark mode
   const toggleDarkMode = () => setDarkMode((prev) => !prev);
 
   return (
@@ -52,8 +47,6 @@ export const MeetProvider = ({ children }) => {
         toggleDarkMode,
         selectedLanguage,
         setSelectedLanguage,
-        file,
-        setFile,
         code,
         setCode,
       }}
@@ -63,7 +56,6 @@ export const MeetProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the context
 export const useMeetContext = () => {
   return useContext(MeetContext);
 };
