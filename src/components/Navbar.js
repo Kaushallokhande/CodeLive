@@ -62,7 +62,14 @@ const Navbar = () => {
       >
 
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h6" fontWeight="bold">CodeLive</Typography>
+          <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box
+              component="img"
+              src="/logocodelive.png"
+              alt="CodeLive Logo"
+              sx={{ height: 34 }}
+            />
+          </Toolbar>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={handleDownload}>Download</Button>
             <Button onClick={() => setOpen(true)} sx={{ color: darkMode ? "white" : "black", textTransform: "none" }}>Invite</Button>
