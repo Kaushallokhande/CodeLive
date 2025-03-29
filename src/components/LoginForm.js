@@ -1,45 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, TextField, Typography, Box, Divider, Alert } from "@mui/material";
 import { GitHub, Google } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
-const LoginForm = ({ setIsAuthenticated }) => {
+const LoginForm = () => {
   const navigate = useNavigate();
+  const { login, loading, error } = useContext(AuthContext); // Get login function from AuthContext
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [dots, setDots] = useState("");
 
   useEffect(() => {
-    if (isLoading) {
+    if (loading) {
       const interval = setInterval(() => {
         setDots((prev) => (prev.length < 3 ? prev + "." : ""));
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [isLoading]);
+  }, [loading]);
 
   const handleLogin = async () => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("https://codelive-backend.onrender.com/api/auth/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("token", response.data.token);
-      console.log(response.data.token);
-      
-      setIsAuthenticated(true);
-      navigate("/meet");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (!email.trim() || !password.trim()) {
+      return;
     }
+
+    await login(email.trim(), password.trim()); // Use login function from AuthContext
   };
 
   return (
@@ -97,7 +83,8 @@ const LoginForm = ({ setIsAuthenticated }) => {
           margin="dense"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
+          autoComplete="email"
+          disabled={loading}
         />
         <TextField
           fullWidth
@@ -107,7 +94,8 @@ const LoginForm = ({ setIsAuthenticated }) => {
           margin="dense"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
+          autoComplete="current-password"
+          disabled={loading}
         />
 
         <Button
@@ -115,9 +103,9 @@ const LoginForm = ({ setIsAuthenticated }) => {
           variant="contained"
           sx={{ mt: 2, bgcolor: "black", color: "white", textTransform: "none" }}
           onClick={handleLogin}
-          disabled={isLoading}
+          disabled={loading}
         >
-          {isLoading ? `Loading${dots}` : "Login"}
+          {loading ? `Loading${dots}` : "Login"}
         </Button>
       </Box>
     </Box>

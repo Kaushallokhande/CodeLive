@@ -1,47 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, TextField, Typography, Box, Divider, Alert } from "@mui/material";
 import { GitHub, Google } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const SignupForm = () => {
   const navigate = useNavigate();
+  const { signup, loading, error, success } = useContext(AuthContext); // Get signup function from AuthContext
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [dots, setDots] = useState("");
 
   useEffect(() => {
-    if (isLoading) {
+    if (loading) {
       const interval = setInterval(() => {
         setDots((prev) => (prev.length < 3 ? prev + "." : ""));
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [isLoading]);
+  }, [loading]);
 
   const handleSignup = async () => {
-    setIsLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const response = await axios.post("https://codelive-backend.onrender.com/api/auth/signup", {
-        username,
-        email,
-        password,
-      });
-      
-      setSuccess("Account created successfully! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 2000);
-    } catch (err) {
-      setError(err.response?.data?.message || "Signup failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      return;
     }
+
+    await signup(username.trim(), email.trim(), password.trim()); // Use signup function from AuthContext
   };
 
   return (
@@ -100,7 +85,7 @@ const SignupForm = () => {
           margin="dense"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          disabled={isLoading}
+          disabled={loading}
         />
         <TextField
           fullWidth
@@ -109,7 +94,7 @@ const SignupForm = () => {
           margin="dense"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
+          disabled={loading}
         />
         <TextField
           fullWidth
@@ -119,7 +104,7 @@ const SignupForm = () => {
           margin="dense"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
+          disabled={loading}
         />
 
         <Button
@@ -127,9 +112,9 @@ const SignupForm = () => {
           variant="contained"
           sx={{ mt: 2, bgcolor: "black", color: "white", textTransform: "none" }}
           onClick={handleSignup}
-          disabled={isLoading}
+          disabled={loading}
         >
-          {isLoading ? `Creating Account${dots}` : "Create Account"}
+          {loading ? `Creating Account${dots}` : "Create Account"}
         </Button>
       </Box>
     </Box>

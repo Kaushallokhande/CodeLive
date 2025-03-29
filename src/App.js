@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
+import { Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import LandingPage from "./components/LandingPage";
 import LoginForm from "./components/LoginForm";
@@ -28,15 +28,16 @@ const App = () => {
         }
 
         try {
-
           const token = localStorage.getItem("token");
-          const response = await axios.get(`https://codelive-backend.onrender.com/api/rooms/joinroom?meetId=${meetId}&password=${password}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await axios.get(
+            `https://codelive-backend.onrender.com/api/rooms/joinroom?meetId=${meetId}&password=${password}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
           console.log(response.data);
 
           if (response.status === 200) {
-            navigate('/code'); // Redirect to Code Editor with meetId
+            navigate("/code"); // Redirect to Code Editor with meetId
           }
         } catch (error) {
           console.error("Failed to join room:", error.response?.data || error.message);
@@ -50,18 +51,15 @@ const App = () => {
     return <p>Joining the meeting...</p>;
   };
 
-
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginForm setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/signup" element={<SignupForm setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/meet" element={<MeetingPage />} />
-        <Route path="/joinroom" element={<JoinRoomRedirect />} />
-        <Route path="/code" element={<ProtectedRoute element={<CodeEditor />} isAuthenticated={isAuthenticated} />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginForm setIsAuthenticated={setIsAuthenticated} />} />
+      <Route path="/signup" element={<SignupForm setIsAuthenticated={setIsAuthenticated} />} />
+      <Route path="/meet" element={<MeetingPage />} />
+      <Route path="/joinroom" element={<JoinRoomRedirect />} />
+      <Route path="/code" element={<ProtectedRoute element={<CodeEditor />} isAuthenticated={isAuthenticated} />} />
+    </Routes>
   );
 };
 
