@@ -24,7 +24,7 @@ const Navbar = () => {
   const [langAnchor, setLangAnchor] = useState(null);
   const urlRef = useRef(null);
 
-  const inviteURL = `http://localhost:3000/joinroom?meetId=${meetingId}&password=${password}`;
+  const inviteURL = `https://codelive-virid.vercel.app/joinroom?meetId=${meetingId}&password=${password}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteURL);
