@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Button, TextField, Typography, Box, Divider, Alert } from "@mui/material";
-import { GitHub, Google } from "@mui/icons-material";
+import { Button, TextField, Typography, Box, Divider, Alert, IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useMeetContext } from "../context/MeetContext";
 
 const SignupForm = () => {
-  const { signup, loading, error, success } = useContext(AuthContext);
+  const { signup, loading, error } = useContext(AuthContext);
   const { darkMode } = useMeetContext();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [dots, setDots] = useState("");
   const navigate = useNavigate();
 
@@ -24,126 +25,37 @@ const SignupForm = () => {
   }, [loading]);
 
   const handleSignup = async () => {
-    if (!username.trim() || !email.trim() || !password.trim()) {
+    if (!username.trim() || !email.trim() || !password.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return;
     }
     await signup(username.trim(), email.trim(), password.trim());
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        bgcolor: darkMode ? "#121212" : "white",
-        color: darkMode ? "white" : "black",
-        transition: "background-color 0.3s ease, color 0.3s ease",
-      }}
-    >
-      <Box
-        sx={{
-          width: 400,
-          p: 4,
-          borderRadius: 3,
-          bgcolor: darkMode ? "#1e1e1e" : "white",
-          boxShadow: 4,
-          textAlign: "center",
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold" color={darkMode ? "white" : "black"}>
-          Create an account
-        </Typography>
-        <Typography variant="body2" color="gray" mb={2}>
-          Enter your details below to create an account
-        </Typography>
-
-        <Box display="flex" gap={2} justifyContent="center" mb={2}>
-          <Button
-            variant="outlined"
-            startIcon={<GitHub />}
-            sx={{
-              color: darkMode ? "white" : "black",
-              borderColor: darkMode ? "white" : "black",
-              textTransform: "none",
-              borderRadius: 2,
-              "&:hover": { bgcolor: darkMode ? "black" : "black", color: "white" },
-            }}
-          >
-            GitHub
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<Google />}
-            sx={{
-              color: darkMode ? "white" : "black",
-              borderColor: darkMode ? "white" : "black",
-              textTransform: "none",
-              borderRadius: 2,
-              "&:hover": { bgcolor: darkMode ? "black" : "black", color: "white" },
-            }}
-          >
-            Google
-          </Button>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", bgcolor: darkMode ? "#121212" : "#f5f5f5", px: 2 }}>
+      <Box sx={{ display: "flex", borderRadius: 4, overflow: "hidden", boxShadow: 5, bgcolor: darkMode ? "#1e1e1e" : "white" }}>
+        <Box sx={{ width: 400, display: { xs: "none", md: "block" }, bgcolor: "#ccc" }}>
+          <img src="/BGCodeLive.png" alt="Background" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </Box>
-
-        <Divider sx={{ my: 2 }}>OR CONTINUE WITH</Divider>
-
-        {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
-
-        <TextField
-          fullWidth
-          label="Username"
-          variant="outlined"
-          margin="dense"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          disabled={loading}
-          sx={{ borderRadius: 2, bgcolor: darkMode ? "#333" : "white" }}
-          InputProps={{ style: { color: darkMode ? "white" : "black" } }}
-        />
-        <TextField
-          fullWidth
-          label="Email"
-          variant="outlined"
-          margin="dense"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={loading}
-          sx={{ borderRadius: 2, bgcolor: darkMode ? "#333" : "white" }}
-          InputProps={{ style: { color: darkMode ? "white" : "black" } }}
-        />
-        <TextField
-          fullWidth
-          label="Password"
-          type="password"
-          variant="outlined"
-          margin="dense"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-          sx={{ borderRadius: 2, bgcolor: darkMode ? "#333" : "white" }}
-          InputProps={{ style: { color: darkMode ? "white" : "black" } }}
-        />
-
-        <Button
-          fullWidth
-          variant="contained"
-          sx={{
-            mt: 2,
-            bgcolor: darkMode ? "#444" : "black",
-            color: "white",
-            textTransform: "none",
-            borderRadius: 2,
-            "&:hover": { bgcolor: darkMode ? "gray" : "gray" },
-          }}
-          onClick={handleSignup}
-          disabled={loading}
-        >
-          {loading ? `Creating Account${dots}` : "Create Account"}
-        </Button>
+        <Box sx={{ width: 400, p: 4, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", bgcolor: darkMode ? "#1e1e1e" : "white" }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Create an account
+          </Typography>
+          <Typography variant="body2" color="gray" mb={2}>
+            Sign up to start using CodeLive
+          </Typography>
+          <Divider sx={{ my: 2 }}>OR CONTINUE WITH</Divider>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextField fullWidth label="Username" variant="outlined" margin="dense" value={username} onChange={(e) => setUsername(e.target.value)} disabled={loading} sx={{ bgcolor: darkMode ? "#333" : "white" }} InputProps={{ style: { color: darkMode ? "white" : "black" } }} />
+          <TextField fullWidth label="Email" variant="outlined" margin="dense" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} sx={{ bgcolor: darkMode ? "#333" : "white" }} InputProps={{ style: { color: darkMode ? "white" : "black" } }} error={email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)} helperText={email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Enter a valid email" : ""} />
+          <TextField fullWidth label="Password" type={showPassword ? "text" : "password"} variant="outlined" margin="dense" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} sx={{ bgcolor: darkMode ? "#333" : "white" }} InputProps={{ style: { color: darkMode ? "white" : "black" }, endAdornment: (<InputAdornment position="end"><IconButton onClick={() => setShowPassword(!showPassword)}>{showPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>) }} />
+          <Button fullWidth variant="contained" sx={{ mt: 2, bgcolor: darkMode ? "#444" : "black", color: "white", textTransform: "none", borderRadius: 2, "&:hover": { bgcolor: darkMode ? "gray" : "gray" } }} onClick={handleSignup} disabled={loading}>
+            {loading ? `Loading${dots}` : "Sign Up"}
+          </Button>
+          <Typography variant="body2" mt={2} color="gray">
+            Already have an account? <Button sx={{ textTransform: "none", color: darkMode ? "white" : "black", fontWeight: "bold", "&:hover": { textDecoration: "underline" } }} onClick={() => navigate("/login")}>Login</Button>
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
