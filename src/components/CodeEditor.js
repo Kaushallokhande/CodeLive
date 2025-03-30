@@ -35,7 +35,6 @@ const CodeEditor = () => {
   useEffect(() => {
     if (meetingId && userId) {
       socket.emit("join-room", { roomId: meetingId, userId, username });
-      console.log(`User name  ${username}, User ${userId} joined room ${meetingId}`);
 
       socket.on("code-update", ({ id, code: updatedCode }) => {
         if (id !== userId) setCode(updatedCode);
