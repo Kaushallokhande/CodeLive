@@ -2,8 +2,8 @@ import React from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import NavbarHome from "./NavbarHome";
 import { useMeetContext } from "../context/MeetContext";
+import NavbarHome from "./NavbarHome";
 
 const LandingPage = () => {
   const navigate = useNavigate();

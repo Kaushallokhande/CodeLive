@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext} from "react";
 import {
   Button,
   TextField,
@@ -17,18 +17,14 @@ import {
   MeetingRoom,
   Close,
   Logout,
+  Visibility, 
+  VisibilityOff
 } from "@mui/icons-material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { useMeetContext } from "../context/MeetContext";
-import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { socket } from "../socket";
-import api from "../utils/api";
 
 const MeetingPage = () => {
-  const navigate = useNavigate();
   const {
     meetingId,
     setMeetingId,
@@ -39,89 +35,21 @@ const MeetingPage = () => {
     isPrivate,
     setIsPrivate,
     error,
-    setError,
     success,
-    setSuccess,
-    setUsers,
     showCreateForm,
     setShowCreateForm,
     loadingCreate,
-    setLoadingCreate,
     loadingJoin,
-    setLoadingJoin,
     darkMode,
+    handleCreateMeeting,
+    handleJoinMeeting
   } = useMeetContext();
-  const { userId, username, setLoggedIn } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
 
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    if (!socket.connected) socket.connect();
-
-    socket.on("user-joined", ({ id, username }) => {
-      setUsers((prevUsers) => [...prevUsers, { id, username }]);
-    });
-
-    return () => {
-      socket.off("user-joined");
-    };
-  }, [setUsers]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setLoggedIn(false);
-    navigate("/login");
-  };
-
-  const handleCreateMeeting = async () => {
-    try {
-      setLoadingCreate(true);
-      const token = localStorage.getItem("token");
-
-      const response = await api.post(
-        "/rooms/",
-        { name: meetingName, isPrivate, password },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setSuccess(`Meeting created! ID: ${response.data.room.id}`);
-      setMeetingId(response.data.room.id);
-      setShowCreateForm(false);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to create meeting");
-    } finally {
-      setLoadingCreate(false);
-    }
-  };
-
-  const handleJoinMeeting = async () => {
-    try {
-      setLoadingJoin(true);
-      setError(null);
-
-      const token = localStorage.getItem("token");
-      if (!userId) {
-        setError("User not found. Please log in again.");
-        setLoadingJoin(false);
-        return;
-      }
-      const response = await api.post(
-        "/rooms/join",
-        { roomId: meetingId, password },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setSuccess("Joined meeting successfully!");
-      if (!socket.connected) socket.connect();
-
-      socket.emit("join-room", { roomId: meetingId, userId, username });
-
-      navigate("/code", { state: { meetingId, password } });
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to join meeting");
-    } finally {
-      setLoadingJoin(false);
-    }
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -165,7 +93,7 @@ const MeetingPage = () => {
               color: "white",
               textTransform: "none",
               "@media (max-width:600px)": {
-                fontSize: "0.9rem", // Adjust font size for small screens
+                fontSize: "0.9rem",
               },
             }}
             startIcon={<Group />}
@@ -182,7 +110,7 @@ const MeetingPage = () => {
               color: "white",
               "&:hover": { bgcolor: darkMode ? "#555" : "#333" },
               "@media (max-width:600px)": {
-                padding: 1, // Adjust padding for mobile screens
+                padding: 1,
               },
             }}
             onClick={handleLogout}
@@ -192,7 +120,7 @@ const MeetingPage = () => {
         </motion.div>
       </Box>
 
-      {/* Create Meeting Dialog */}
+      {/* Create Meeing Dialog */}
       {showCreateForm && (
         <Box
           sx={{

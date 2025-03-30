@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button, TextField, Typography, Box, Divider, Alert, IconButton, InputAdornment } from "@mui/material";
-import { GitHub, Google, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useMeetContext } from "../context/MeetContext";

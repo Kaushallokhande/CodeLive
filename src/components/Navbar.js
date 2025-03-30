@@ -22,6 +22,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [langAnchor, setLangAnchor] = useState(null);
+  const [mobileLangAnchor, setMobileLangAnchor] = useState(null);
   const urlRef = useRef(null);
 
   const inviteURL = `https://codelive-virid.vercel.app/joinroom?meetId=${meetingId}&password=${password}`;
@@ -46,6 +47,7 @@ const Navbar = () => {
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
     setLangAnchor(null);
+    setMobileLangAnchor(null);
   };
 
   return (
@@ -60,7 +62,6 @@ const Navbar = () => {
           borderColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
         }}
       >
-
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box
@@ -93,6 +94,12 @@ const Navbar = () => {
               <MenuItem onClick={handleDownload}>Download</MenuItem>
               <MenuItem onClick={() => setOpen(true)}>Invite</MenuItem>
               <MenuItem onClick={toggleDarkMode}>{darkMode ? "Light Mode" : "Dark Mode"}</MenuItem>
+              <MenuItem onClick={(e) => setMobileLangAnchor(e.currentTarget)}>Change Language</MenuItem>
+            </Menu>
+            <Menu anchorEl={mobileLangAnchor} open={Boolean(mobileLangAnchor)} onClose={() => setMobileLangAnchor(null)}>
+              {languages.map((lang) => (
+                <MenuItem key={lang} onClick={() => handleLanguageChange(lang)}>{lang.toUpperCase()}</MenuItem>
+              ))}
             </Menu>
           </Box>
         </Toolbar>

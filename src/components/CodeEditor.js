@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { useMeetContext } from "../context/MeetContext";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useLocation } from "react-router-dom";
 import { socket } from "../socket";
 import { debounce } from "lodash";
 import Editor, { useMonaco } from "@monaco-editor/react";
@@ -13,10 +12,8 @@ import axios from "axios";
 const COLORS = ["#FF5733", "#33FF57", "#3357FF", "#F033FF", "#FFDD33"];
 
 const CodeEditor = () => {
-  const { darkMode, selectedLanguage, code, setCode, setMeetingId, setPassword } = useMeetContext();
+  const { darkMode, selectedLanguage, code, setCode, meetingId } = useMeetContext();
   const { userId, username } = useContext(AuthContext);
-  const location = useLocation();
-  const { meetingId, password } = location.state || {};
 
   const [editorInstance, setEditorInstance] = useState(null);
   const cursorsRef = useRef({});
@@ -25,12 +22,7 @@ const CodeEditor = () => {
   const [usernames, setUsernames] = useState({});
   const monacoInstance = useMonaco();
 
-  useEffect(() => {
-    if (location.state?.meetingId) setMeetingId(location.state.meetingId);
-    if (location.state?.password) setPassword(location.state.password);
-  }, [location.state, setMeetingId, setPassword]);
-
-
+  // Fetch initial code from backend
   useEffect(() => {
     if (meetingId) {
       axios
@@ -43,6 +35,7 @@ const CodeEditor = () => {
   useEffect(() => {
     if (meetingId && userId) {
       socket.emit("join-room", { roomId: meetingId, userId, username });
+      console.log(`User name  ${username}, User ${userId} joined room ${meetingId}`);
 
       socket.on("code-update", ({ id, code: updatedCode }) => {
         if (id !== userId) setCode(updatedCode);
@@ -64,18 +57,26 @@ const CodeEditor = () => {
           updateCursors();
         }
       });
+
+      socket.on("receive-message", ({ userId, username, message, timestamp }) => {
+        console.log(`[${new Date(timestamp).toLocaleTimeString()}] ${username}: ${message}`);
+      });
     }
 
     return () => {
       socket.emit("leave-room", { roomId: meetingId, userId });
       socket.off("code-update");
       socket.off("cursor-move");
+      socket.off("receive-message");
     };
   }, [meetingId, userId, username, setCode]);
 
+  // Debounced function to emit code changes
   const emitCodeChange = useCallback(
     debounce((newCode) => {
-      socket.emit("code-change", { roomId: meetingId, userId, code: newCode });
+      socket.emit("code-change", { roomId: meetingId, userId, code: newCode }, (ack) => {
+        console.log(ack); // Log acknowledgment
+      });
     }, 500),
     [meetingId, userId]
   );
@@ -119,10 +120,7 @@ const CodeEditor = () => {
           onMount={handleEditorDidMount}
           options={{
             automaticLayout: true,
-            scrollbar: {
-              vertical: "hidden",
-              horizontal: "hidden",
-            },
+            scrollbar: { vertical: "hidden", horizontal: "hidden" },
             overviewRulerLanes: 0,
           }}
         />

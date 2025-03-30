@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect,useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
@@ -24,10 +24,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return;
     }
-  
+
     const decodedToken = JSON.parse(atob(token.split(".")[1]));
     const { id, username } = decodedToken;
-  
+
     const checkUserExists = async () => {
       try {
         const response = await api.get(`/auth/check-user/${id}`);
@@ -35,8 +35,7 @@ export const AuthProvider = ({ children }) => {
           setLoggedIn(false);
           localStorage.removeItem("token");
         } else {
-          setUserId(id);
-          setUsername(username);
+          updateUser(id, username);
           navigate("/meet");
           setLoggedIn(true);
         }
@@ -48,10 +47,10 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
-  
+
     checkUserExists();
   }, []);
-  
+
   const signup = async (username, email, password) => {
     try {
       setLoading(true);
@@ -86,11 +85,29 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setUserId(null);
     setUsername("");
+    setLoggedIn(false);
+    setError(null);
+    setLoading(false);
+    
     navigate("/login");
   };
 
+  const authValue = useMemo(() => ({
+    userId,
+    username,
+    signup,
+    login,
+    logout,
+    loading,
+    error,
+    loggedIn,
+    setLoggedIn
+  }), [userId, username, loggedIn, loading, error]);
+
   return (
-    <AuthContext.Provider value={{ userId, username, signup, login, logout, loading, error, loggedIn, setLoggedIn }}>
+    <AuthContext.Provider value={
+      authValue
+    }>
       {children}
     </AuthContext.Provider>
   );
