@@ -74,6 +74,8 @@ const Navbar = () => {
           </Toolbar>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <Link to="/" style={{ textDecoration: "none" }}>Home</Link>
+            <Link to="/signup" style={{ textDecoration: "none" }}>Signup</Link>
+            <Link to="/login" style={{ textDecoration: "none" }}>Login</Link>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={handleDownload}>Download</Button>
             <Button onClick={() => setOpen(true)} sx={{ color: darkMode ? "white" : "black", textTransform: "none" }}>Invite</Button>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={(e) => setLangAnchor(e.currentTarget)} endIcon={<ArrowDropDown />}>
