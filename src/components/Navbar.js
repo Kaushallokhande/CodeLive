@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { AppBar, Toolbar, Typography, Button, IconButton, Box, Menu, MenuItem, Dialog, DialogTitle, DialogContent, TextField } from "@mui/material";
 import { DarkMode, LightMode, ContentCopy, Close, ArrowDropDown, Menu as MenuIcon } from "@mui/icons-material";
 import { useMeetContext } from "../context/MeetContext";
+import { Link } from "react-router-dom";
 
 const languages = [
   "javascript", "python", "java", "cpp", "c", "csharp", "php", "ruby", "swift", "go",
@@ -72,6 +73,7 @@ const Navbar = () => {
             />
           </Toolbar>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <Link to="/" style={{ textDecoration: "none" }}>Home</Link>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={handleDownload}>Download</Button>
             <Button onClick={() => setOpen(true)} sx={{ color: darkMode ? "white" : "black", textTransform: "none" }}>Invite</Button>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={(e) => setLangAnchor(e.currentTarget)} endIcon={<ArrowDropDown />}>
