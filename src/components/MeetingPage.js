@@ -1,4 +1,4 @@
-import React, { useState, useContext} from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -17,7 +17,7 @@ import {
   MeetingRoom,
   Close,
   Logout,
-  Visibility, 
+  Visibility,
   VisibilityOff
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -35,7 +35,9 @@ const MeetingPage = () => {
     isPrivate,
     setIsPrivate,
     error,
+    setError,
     success,
+    setSuccess,
     showCreateForm,
     setShowCreateForm,
     loadingCreate,
@@ -51,6 +53,18 @@ const MeetingPage = () => {
   const handleLogout = async () => {
     await logout();
   };
+
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        if (error) setError("");
+        if (success) setSuccess("");
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
+
 
   return (
     <Box
@@ -92,9 +106,16 @@ const MeetingPage = () => {
               bgcolor: darkMode ? "#333" : "black",
               color: "white",
               textTransform: "none",
+              "&:hover": {
+                bgcolor: darkMode ? "#444" : "#222",
+              },
               "@media (max-width:600px)": {
                 fontSize: "0.9rem",
+                minWidth: "unset",
+                px: 1.5,
               },
+              borderRadius: 2,
+              boxShadow: darkMode ? "0 2px 8px rgba(255,255,255,0.05)" : "0 2px 8px rgba(0,0,0,0.2)",
             }}
             startIcon={<Group />}
             onClick={() => setShowCreateForm(true)}
@@ -102,6 +123,7 @@ const MeetingPage = () => {
             Create Meeting
           </Button>
         </motion.div>
+
 
         <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
           <IconButton
@@ -128,7 +150,7 @@ const MeetingPage = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: { xs: "80%", sm: 400 }, // Responsive width
+            width: { xs: "80%", sm: 400 },
             p: 4,
             borderRadius: 2,
             bgcolor: darkMode ? "#222" : "white",
@@ -148,14 +170,38 @@ const MeetingPage = () => {
             margin="dense"
             value={meetingName}
             onChange={(e) => setMeetingName(e.target.value)}
+            InputLabelProps={{
+              style: {
+                color: darkMode ? "#ccc" : "#555",
+              },
+            }}
+            InputProps={{
+              style: {
+                backgroundColor: darkMode ? "#2c2c2c" : "#fff",
+                color: darkMode ? "#eee" : "#000",
+                borderRadius: 8,
+              },
+            }}
             sx={{
-              bgcolor: darkMode ? "#333" : "white",
-              borderRadius: 1,
+              mt: 1,
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: darkMode ? "#555" : "#ccc",
+                },
+                "&:hover fieldset": {
+                  borderColor: darkMode ? "#888" : "#999",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: darkMode ? "#bbb" : "black",
+                },
+              },
               "@media (max-width:600px)": {
-                fontSize: "0.9rem", // Adjust font size for mobile
+                fontSize: "0.9rem",
               },
             }}
           />
+
           <FormControlLabel
             control={<Switch checked={isPrivate} onChange={() => setIsPrivate(!isPrivate)} />}
             label="Private Meeting"
@@ -164,19 +210,57 @@ const MeetingPage = () => {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               variant="outlined"
               margin="dense"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              InputLabelProps={{
+                style: {
+                  color: darkMode ? "#ccc" : "#555",
+                },
+              }}
+              InputProps={{
+                style: {
+                  backgroundColor: darkMode ? "#2c2c2c" : "#fff",
+                  color: darkMode ? "#eee" : "#000",
+                  borderRadius: 8,
+                },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{
+                        color: darkMode ? "#ccc" : "#555",
+                      }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{
-                bgcolor: darkMode ? "#333" : "white",
-                borderRadius: 1,
+                mt: 1,
+                mb: 1,
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: darkMode ? "#555" : "#ccc",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: darkMode ? "#888" : "#999",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: darkMode ? "#bbb" : "black",
+                  },
+                },
                 "@media (max-width:600px)": {
-                  fontSize: "0.9rem", // Adjust font size for mobile
+                  fontSize: "0.9rem",
                 },
               }}
             />
+
+
           )}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
@@ -188,7 +272,7 @@ const MeetingPage = () => {
                 color: "white",
                 textTransform: "none",
                 "@media (max-width:600px)": {
-                  fontSize: "0.9rem", // Adjust font size for mobile
+                  fontSize: "0.9rem",
                 },
               }}
               onClick={handleCreateMeeting}
@@ -202,7 +286,7 @@ const MeetingPage = () => {
               mt: 2,
               color: darkMode ? "#bbb" : "black",
               "@media (max-width:600px)": {
-                fontSize: "0.9rem", // Adjust font size for mobile
+                fontSize: "0.9rem",
               },
             }}
             startIcon={<Close />}
@@ -217,14 +301,14 @@ const MeetingPage = () => {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <Box
           sx={{
-            width: { xs: "80%", sm: 400 }, // Responsive width
+            width: { xs: "80%", sm: 400 },
             p: 4,
             borderRadius: 2,
             bgcolor: darkMode ? "#1e1e1e" : "white",
             boxShadow: 3,
             textAlign: "center",
             "@media (max-width:600px)": {
-              p: 2, // Padding adjustments for mobile screens
+              p: 2,
             },
           }}
         >
@@ -241,14 +325,38 @@ const MeetingPage = () => {
             margin="dense"
             value={meetingId}
             onChange={(e) => setMeetingId(e.target.value)}
+            InputLabelProps={{
+              style: {
+                color: darkMode ? "#ccc" : "#555",
+              },
+            }}
+            InputProps={{
+              style: {
+                backgroundColor: darkMode ? "#2c2c2c" : "#fff",
+                color: darkMode ? "#eee" : "#000",
+                borderRadius: 8,
+              },
+            }}
             sx={{
-              bgcolor: darkMode ? "#333" : "white",
-              borderRadius: 1,
+              mt: 1,
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: darkMode ? "#555" : "#ccc",
+                },
+                "&:hover fieldset": {
+                  borderColor: darkMode ? "#888" : "#999",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: darkMode ? "#bbb" : "black",
+                },
+              },
               "@media (max-width:600px)": {
-                fontSize: "0.9rem", // Adjust font size for mobile
+                fontSize: "0.9rem",
               },
             }}
           />
+
           <TextField
             fullWidth
             label="Password"
@@ -257,23 +365,52 @@ const MeetingPage = () => {
             margin="dense"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            InputLabelProps={{
+              style: {
+                color: darkMode ? "#ccc" : "#555",
+              },
+            }}
+            InputProps={{
+              style: {
+                backgroundColor: darkMode ? "#2c2c2c" : "#fff",
+                color: darkMode ? "#eee" : "#000",
+                borderRadius: 8,
+              },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    sx={{
+                      color: darkMode ? "#ccc" : "#555",
+                    }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+
+              ),
+            }}
             sx={{
-              bgcolor: darkMode ? "#333" : "white",
-              borderRadius: 1,
+              mt: 1,
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: darkMode ? "#555" : "#ccc",
+                },
+                "&:hover fieldset": {
+                  borderColor: darkMode ? "#888" : "#999",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: darkMode ? "#bbb" : "black",
+                },
+              },
               "@media (max-width:600px)": {
                 fontSize: "0.9rem",
               },
             }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
           />
+
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               fullWidth

@@ -1,12 +1,66 @@
 import React, { useState, useRef } from "react";
-import { AppBar, Toolbar, Typography, Button, IconButton, Box, Menu, MenuItem, Dialog, DialogTitle, DialogContent, TextField } from "@mui/material";
-import { DarkMode, LightMode, ContentCopy, Close, ArrowDropDown, Menu as MenuIcon } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Box,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField
+} from "@mui/material";
+import {
+  DarkMode,
+  LightMode,
+  ContentCopy,
+  Close,
+  ArrowDropDown,
+  Menu as MenuIcon
+} from "@mui/icons-material";
 import { useMeetContext } from "../context/MeetContext";
 
 const languages = [
-  "javascript", "python", "java", "cpp", "c", "csharp", "php", "ruby", "swift", "go",
-  "rust", "kotlin", "typescript", "scala", "perl", "haskell", "lua", "dart", "r"
+  "javascript", "typescript", "python", "java", "csharp", "cpp", "html", "css", "json", "php", "ruby", "scss", "less", "markdown", "xml", "powershell", "r", "sass", "coffeescript", "vb", "lua", "fsharp", "batch", "handlebars", "pug", "razor", "diff", "objective-c"
 ];
+
+
+const languageFileExtensions = {
+  typescript: "ts",
+  javascript: "js",
+  css: "css",
+  less: "less",
+  scss: "scss",
+  json: "json",
+  html: "html",
+  xml: "xml",
+  php: "php",
+  csharp: "cs",
+  cpp: "cpp",
+  razor: "cshtml",
+  markdown: "md",
+  diff: "diff",
+  java: "java",
+  vb: "vb",
+  coffeescript: "coffee",
+  handlebars: "hbs",
+  batch: "bat",
+  pug: "pug",
+  fsharp: "fs",
+  lua: "lua",
+  powershell: "ps1",
+  python: "py",
+  ruby: "rb",
+  sass: "sass",
+  r: "r",
+  "objective-c": "m"
+};
+
+
 
 const Navbar = () => {
   const {
@@ -25,23 +79,15 @@ const Navbar = () => {
   const [mobileLangAnchor, setMobileLangAnchor] = useState(null);
   const urlRef = useRef(null);
 
-  const inviteURL = `https://codelive-virid.vercel.app/joinroom?meetId=${meetingId}&password=${password}`;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(inviteURL);
-    if (urlRef.current) {
-      urlRef.current.select();
-    }
-  };
-
   const handleDownload = () => {
     const blob = new Blob([code], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `code.${selectedLanguage}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const extension = languageFileExtensions[selectedLanguage] || "txt";
+    a.href = url;
+    a.download = `code.${extension}`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleLanguageChange = (language) => {
@@ -64,12 +110,14 @@ const Navbar = () => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Box
-              component="img"
-              src="/logocodelive.png"
-              alt="CodeLive Logo"
-              sx={{ height: 34 }}
-            />
+            <Link to="/" style={{ textDecoration: "none" }}>
+              <Box
+                component="img"
+                src="/logocodelive.png"
+                alt="CodeLive Logo"
+                sx={{ height: 34, cursor: "pointer" }}
+              />
+            </Link>
           </Toolbar>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={handleDownload}>Download</Button>
@@ -77,11 +125,33 @@ const Navbar = () => {
             <Button sx={{ color: darkMode ? "white" : "black", textTransform: "none" }} onClick={(e) => setLangAnchor(e.currentTarget)} endIcon={<ArrowDropDown />}>
               {selectedLanguage ? selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1).toLowerCase() : "Java"}
             </Button>
-            <Menu anchorEl={langAnchor} open={Boolean(langAnchor)} onClose={() => setLangAnchor(null)}>
+            <Menu
+              anchorEl={langAnchor}
+              open={Boolean(langAnchor)}
+              onClose={() => setLangAnchor(null)}
+              PaperProps={{
+                sx: {
+                  bgcolor: darkMode ? "#1e1e1e" : "#fff",
+                  color: darkMode ? "#fff" : "#000",
+                },
+              }}
+            >
               {languages.map((lang) => (
-                <MenuItem key={lang} onClick={() => handleLanguageChange(lang)}>{lang.toUpperCase()}</MenuItem>
+                <MenuItem
+                  key={lang}
+                  onClick={() => handleLanguageChange(lang)}
+                  sx={{
+                    color: darkMode ? "#fff" : "#000",
+                    "&:hover": {
+                      bgcolor: darkMode ? "#333" : "#f0f0f0",
+                    },
+                  }}
+                >
+                  {lang.toUpperCase()}
+                </MenuItem>
               ))}
             </Menu>
+
             <IconButton onClick={toggleDarkMode} sx={{ color: darkMode ? "white" : "black" }}>
               {darkMode ? <LightMode /> : <DarkMode />}
             </IconButton>
@@ -90,34 +160,178 @@ const Navbar = () => {
             <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} sx={{ color: darkMode ? "white" : "black" }}>
               <MenuIcon />
             </IconButton>
-            <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
-              <MenuItem onClick={handleDownload}>Download</MenuItem>
-              <MenuItem onClick={() => setOpen(true)}>Invite</MenuItem>
-              <MenuItem onClick={toggleDarkMode}>{darkMode ? "Light Mode" : "Dark Mode"}</MenuItem>
-              <MenuItem onClick={(e) => setMobileLangAnchor(e.currentTarget)}>Change Language</MenuItem>
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={() => setMenuAnchor(null)}
+              PaperProps={{
+                sx: {
+                  bgcolor: darkMode ? "#1e1e1e" : "#fff",
+                  color: darkMode ? "#fff" : "#000",
+                },
+              }}
+            >
+              <MenuItem
+                onClick={handleDownload}
+                sx={{
+                  color: darkMode ? "#fff" : "#000",
+                  "&:hover": {
+                    bgcolor: darkMode ? "#333" : "#f0f0f0",
+                  },
+                }}
+              >
+                Download
+              </MenuItem>
+              <MenuItem
+                onClick={() => setOpen(true)}
+                sx={{
+                  color: darkMode ? "#fff" : "#000",
+                  "&:hover": {
+                    bgcolor: darkMode ? "#333" : "#f0f0f0",
+                  },
+                }}
+              >
+                Invite
+              </MenuItem>
+              <MenuItem
+                onClick={toggleDarkMode}
+                sx={{
+                  color: darkMode ? "#fff" : "#000",
+                  "&:hover": {
+                    bgcolor: darkMode ? "#333" : "#f0f0f0",
+                  },
+                }}
+              >
+                {darkMode ? "Light Mode" : "Dark Mode"}
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => setMobileLangAnchor(e.currentTarget)}
+                sx={{
+                  color: darkMode ? "#fff" : "#000",
+                  "&:hover": {
+                    bgcolor: darkMode ? "#333" : "#f0f0f0",
+                  },
+                }}
+              >
+                Change Language
+              </MenuItem>
             </Menu>
-            <Menu anchorEl={mobileLangAnchor} open={Boolean(mobileLangAnchor)} onClose={() => setMobileLangAnchor(null)}>
+
+            <Menu
+              anchorEl={mobileLangAnchor}
+              open={Boolean(mobileLangAnchor)}
+              onClose={() => setMobileLangAnchor(null)}
+              PaperProps={{
+                sx: {
+                  bgcolor: darkMode ? "#1e1e1e" : "#fff",
+                  color: darkMode ? "#fff" : "#000",
+                },
+              }}
+            >
               {languages.map((lang) => (
-                <MenuItem key={lang} onClick={() => handleLanguageChange(lang)}>{lang.toUpperCase()}</MenuItem>
+                <MenuItem
+                  key={lang}
+                  onClick={() => handleLanguageChange(lang)}
+                  sx={{
+                    color: darkMode ? "#fff" : "#000",
+                    "&:hover": {
+                      bgcolor: darkMode ? "#333" : "#f0f0f0",
+                    },
+                  }}
+                >
+                  {lang.toUpperCase()}
+                </MenuItem>
               ))}
             </Menu>
           </Box>
         </Toolbar>
       </AppBar>
 
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          Share Meeting Link
-          <IconButton onClick={() => setOpen(false)}>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: darkMode ? "#1e1e1e" : "#fff",
+            color: darkMode ? "#fff" : "#000"
+          }
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: darkMode ? "#fff" : "#000"
+          }}
+        >
+          Share Meeting Info
+          <IconButton onClick={() => setOpen(false)} sx={{ color: darkMode ? "#fff" : "#000" }}>
             <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="textSecondary">Invite others by sharing this link:</Typography>
-          <TextField fullWidth variant="outlined" value={inviteURL} inputRef={urlRef} margin="dense" />
-          <Button variant="contained" sx={{ mt: 2 }} onClick={handleCopy} startIcon={<ContentCopy />}>Copy Link</Button>
+          <Typography
+            variant="body2"
+            sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "text.secondary" }}
+            gutterBottom
+          >
+            Share the meeting details with your friends:
+          </Typography>
+
+          <TextField
+            fullWidth
+            label="Meeting ID"
+            variant="outlined"
+            value={meetingId}
+            inputRef={urlRef}
+            margin="dense"
+            InputProps={{
+              sx: {
+                bgcolor: darkMode ? "#333" : "#fff",
+                color: darkMode ? "#fff" : "#000",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: darkMode ? "#777" : undefined
+                }
+              },
+              endAdornment: (
+                <IconButton onClick={() => navigator.clipboard.writeText(meetingId)} sx={{ color: darkMode ? "#fff" : "#000" }}>
+                  <ContentCopy />
+                </IconButton>
+              )
+            }}
+            InputLabelProps={{
+              sx: { color: darkMode ? "#aaa" : undefined }
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            variant="outlined"
+            value={password}
+            margin="dense"
+            InputProps={{
+              sx: {
+                bgcolor: darkMode ? "#333" : "#fff",
+                color: darkMode ? "#fff" : "#000",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: darkMode ? "#777" : undefined
+                }
+              },
+              endAdornment: (
+                <IconButton onClick={() => navigator.clipboard.writeText(password)} sx={{ color: darkMode ? "#fff" : "#000" }}>
+                  <ContentCopy />
+                </IconButton>
+              )
+            }}
+            InputLabelProps={{
+              sx: { color: darkMode ? "#aaa" : undefined }
+            }}
+          />
         </DialogContent>
       </Dialog>
+
     </>
   );
 };

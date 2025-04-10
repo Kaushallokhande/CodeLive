@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Button, TextField, Typography, Box, Divider, Alert, IconButton, InputAdornment } from "@mui/material";
+import { Button, TextField, Typography, Box, Alert, IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -76,14 +76,46 @@ const LoginForm = () => {
             bgcolor: darkMode ? "#1e1e1e" : "white",
           }}
         >
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
+          <Typography variant="h5" fontWeight="bold" gutterBottom color={darkMode ? "white" : "black"}>
             Login to your account
           </Typography>
           <Typography variant="body2" color="gray" mb={2}>
             Enter your credentials to access your account
           </Typography>
 
-          <Divider sx={{ my: 2 }}>OR CONTINUE WITH</Divider>
+          <Box
+            sx={{
+              position: "relative",
+              width: "100%",
+              textAlign: "center",
+              my: 3,
+            }}
+          >
+            <Box
+              sx={{
+                borderBottom: `1px solid ${darkMode ? "#444" : "#ccc"}`,
+                position: "absolute",
+                top: "50%",
+                left: 0,
+                width: "100%",
+                transform: "translateY(-50%)",
+                zIndex: 1,
+              }}
+            />
+            <Typography
+              variant="body2"
+              sx={{
+                display: "inline-block",
+                px: 2,
+                backgroundColor: darkMode ? "#1e1e1e" : "white",
+                color: darkMode ? "#bbb" : "#444",
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
+              OR CONTINUE WITH
+            </Typography>
+          </Box>
 
           {error && <Alert severity="error">{error}</Alert>}
 
@@ -96,11 +128,21 @@ const LoginForm = () => {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             disabled={loading}
-            sx={{ bgcolor: darkMode ? "#333" : "white" }}
-            InputProps={{ style: { color: darkMode ? "white" : "black" } }}
             error={email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
             helperText={email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Enter a valid email" : ""}
+            InputProps={{
+              style: {
+                color: darkMode ? "white" : "black",
+                backgroundColor: darkMode ? "#333" : "#fff",
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: darkMode ? "white" : "#444",
+              },
+            }}
           />
+
           <TextField
             fullWidth
             label="Password"
@@ -111,18 +153,30 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             disabled={loading}
-            sx={{ bgcolor: darkMode ? "#333" : "white" }}
             InputProps={{
-              style: { color: darkMode ? "white" : "black" },
+              style: {
+                color: darkMode ? "white" : "black",
+                backgroundColor: darkMode ? "#333" : "#fff",
+              },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {showPassword ? (
+                      <VisibilityOff sx={{ color: darkMode ? "#bbb" : "#444" }} />
+                    ) : (
+                      <Visibility sx={{ color: darkMode ? "#bbb" : "#444" }} />
+                    )}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
+            InputLabelProps={{
+              style: {
+                color: darkMode ? "white" : "#444",
+              },
+            }}
           />
+
 
           <Button
             fullWidth
