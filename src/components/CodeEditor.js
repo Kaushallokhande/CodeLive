@@ -36,12 +36,15 @@ const CodeEditor = () => {
     if (meetingId && userId) {
       socket.emit("join-room", { roomId: meetingId, userId, username });
 
+      console.log(`User ${username} in room`);
+
       socket.on("code-update", ({ id, code: updatedCode }) => {
         if (id !== userId) setCode(updatedCode);
       });
 
       socket.on("cursor-move", ({ id, position, name }) => {
         if (id !== userId) {
+          console.log(`Cursor moved by ${name} & id:${id} & userID:${userId}:`, position);
           cursorsRef.current[id] = { position, name };
 
           setCursorColors((prev) => {

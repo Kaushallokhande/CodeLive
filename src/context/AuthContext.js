@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect,useMemo } from "react";
+import React, { createContext, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    const { id, username } = decodedToken;
+    const { id } = decodedToken;
 
     const checkUserExists = async () => {
       try {
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
           setLoggedIn(false);
           localStorage.removeItem("token");
         } else {
-          updateUser(id, username);
+          updateUser(id, response.data.user.username);
           navigate("/meet");
           setLoggedIn(true);
         }
@@ -58,6 +58,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post("/auth/signup", { username, email, password });
       localStorage.setItem("token", response.data.token);
       updateUser(response.data.id, response.data.username);
+      setLoggedIn(true);
       navigate("/meet");
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed.");
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", response.data.token);
       updateUser(response.data.id, response.data.username);
+      setLoggedIn(true);
       navigate("/meet");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed.");
@@ -88,7 +90,6 @@ export const AuthProvider = ({ children }) => {
     setLoggedIn(false);
     setError(null);
     setLoading(false);
-    
     navigate("/login");
   };
 
@@ -105,9 +106,7 @@ export const AuthProvider = ({ children }) => {
   }), [userId, username, loggedIn, loading, error]);
 
   return (
-    <AuthContext.Provider value={
-      authValue
-    }>
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );
