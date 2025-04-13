@@ -22,6 +22,21 @@ const CodeEditor = () => {
   const [usernames, setUsernames] = useState({});
   const monacoInstance = useMonaco();
 
+  const updateCursors = () => {
+    if (!editorInstance || !monacoInstance) return;
+
+    const newDecorations = Object.entries(cursorsRef.current).map(([id, { position, name }]) => ({
+      range: new monacoInstance.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+      options: {
+        className: "custom-cursor",
+        inlineClassName: `cursor-${id}`,
+        afterContentClassName: `username-${id}`,
+      },
+    }));
+
+    decorationsRef.current = editorInstance.deltaDecorations(decorationsRef.current, newDecorations);
+  };
+  
   // Fetch initial code from backend
   useEffect(() => {
     if (meetingId) {
@@ -36,7 +51,7 @@ const CodeEditor = () => {
     if (meetingId && userId) {
       socket.emit("join-room", { roomId: meetingId, userId, username });
 
-      console.log(`User ${username} in room`);
+      // console.log(`User ${username} in room`);
 
       socket.on("code-update", ({ id, code: updatedCode }) => {
         if (id !== userId) setCode(updatedCode);
@@ -44,7 +59,7 @@ const CodeEditor = () => {
 
       socket.on("cursor-move", ({ id, position, name }) => {
         if (id !== userId) {
-          console.log(`Cursor moved by ${name} & id:${id} & userID:${userId}:`, position);
+          // console.log(`Cursor moved by ${name} & id:${id} & userID:${userId}:`, position);
           cursorsRef.current[id] = { position, name };
 
           setCursorColors((prev) => {
@@ -92,20 +107,6 @@ const CodeEditor = () => {
     });
   };
 
-  const updateCursors = () => {
-    if (!editorInstance || !monacoInstance) return;
-
-    const newDecorations = Object.entries(cursorsRef.current).map(([id, { position, name }]) => ({
-      range: new monacoInstance.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-      options: {
-        className: "custom-cursor",
-        inlineClassName: `cursor-${id}`,
-        afterContentClassName: `username-${id}`,
-      },
-    }));
-
-    decorationsRef.current = editorInstance.deltaDecorations(decorationsRef.current, newDecorations);
-  };
 
   return (
     <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
